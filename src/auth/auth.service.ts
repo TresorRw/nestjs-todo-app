@@ -77,7 +77,7 @@ export class AuthService {
 
   signToken(payload: { id: string; email: string | null; username: string }) {
     const secret = this.config.get('JWT_SECRET');
-    const token: string = this.jwt.sign(payload, { secret });
+    const token: string = this.jwt.sign(payload, { secret, expiresIn: '1w' });
     return token;
   }
 }
