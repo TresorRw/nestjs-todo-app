@@ -24,7 +24,7 @@ export class AuthService {
     try {
       const user = await this.prisma.user.create({
         data,
-        select: { email: true, username: true, id: true },
+        select: { email: true, username: true },
       });
       throw new HttpException(
         {
