@@ -7,7 +7,7 @@ config();
 const port = process.env.PORT;
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
   await app.listen(port, () => console.log(`🛜   http://localhost:${port}`));
 }
 bootstrap();

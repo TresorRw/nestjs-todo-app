@@ -53,7 +53,7 @@ export class AuthService {
         `Your credential does not match with any record`,
       );
     }
-    const decrpyt: Promise<boolean> = argon.verify(
+    const decrpyt: boolean = await argon.verify(
       userFound.password,
       dto.password,
     );
