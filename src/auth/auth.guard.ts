@@ -1,8 +1,8 @@
 import {
   CanActivate,
   ExecutionContext,
-  ForbiddenException,
   Injectable,
+  NotAcceptableException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -15,26 +15,21 @@ export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = this.getTokenFromHeaders(request);
-    if (!token)
-      throw new UnauthorizedException('You need to login to continue');
+    if (!token) throw new UnauthorizedException('Please login to continue');
+    const secret = this.config.get('JWT_SECRET');
     try {
-      const payload = await this.jwt.verifyAsync(token, {
-        secret: this.config.get('JWT_SECRET'),
-      });
+      const payload = await this.jwt.verifyAsync(token, { secret });
       request['user'] = payload;
     } catch (error) {
-      console.log(error);
-      throw new ForbiddenException(
-        'Could not verify your session, please login again',
-      );
+      throw new NotAcceptableException('Session timed out, please login again');
     }
     return true;
   }
 
   private getTokenFromHeaders(request: Request): string | undefined {
-    const authorizationHeader = request.headers.authorization;
-    if (authorizationHeader) {
-      const [type, token] = authorizationHeader.split(' ');
+    const authHeader = request.headers.authorization;
+    if (authHeader) {
+      const [type, token] = authHeader.split(' ');
       return type === 'Bearer' ? token : undefined;
     }
     return undefined;
