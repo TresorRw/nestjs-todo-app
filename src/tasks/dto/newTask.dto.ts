@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsString,
   IsNotEmpty,
@@ -20,14 +21,20 @@ export class DateValidator {
 }
 
 export class TaskDTO {
+  @ApiProperty({ description: 'Title of the task', required: true })
   @IsString()
   @IsNotEmpty()
   title: string;
 
+  @ApiProperty({ description: 'Description of the task', required: true })
   @IsString()
   @IsNotEmpty()
   description: string;
 
+  @ApiProperty({
+    description: 'dateTime of the task format: YYYY-MM-DD HH:mm',
+    required: true,
+  })
   @IsString()
   @IsNotEmpty()
   @Validate(DateValidator)

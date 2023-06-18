@@ -102,4 +102,27 @@ export class TasksService {
     });
     return { message: `Task with ${task_id}`, task: response };
   }
+
+  async statusChange(task_id: string, user: User) {
+    const checkTask = await this.prisma.task.findFirst({
+      where: { id: task_id, userId: user.id },
+    });
+    if (!checkTask) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: 'We can not find matching task in your account',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    const update = await this.prisma.task.update({
+      where: { id: task_id },
+      data: { isCompleted: !checkTask.isCompleted },
+    });
+    return {
+      message: 'Status update completed',
+      new_records: update,
+    };
+  }
 }

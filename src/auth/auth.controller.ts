@@ -2,8 +2,10 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignInDTO, SignUpDTO } from './dto';
 import * as argon from 'argon2';
+import { ApiTags } from '@nestjs/swagger';
 
 @Controller('auth')
+@ApiTags('Authentication')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
