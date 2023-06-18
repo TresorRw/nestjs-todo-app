@@ -70,4 +70,29 @@ export class TasksService {
       );
     }
   }
+
+  async deleteTask(task_id: string, user: User) {
+    const checkTask = await this.prisma.task.findFirst({
+      where: { id: task_id, userId: user.id },
+    });
+    if (!checkTask) {
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.NOT_FOUND,
+          message: 'We can not find matching task in your account',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    const del = await this.prisma.task.delete({ where: { id: task_id } });
+    if (del) {
+      throw new HttpException(
+        {
+          statuCode: HttpStatus.ACCEPTED,
+          message: `${del.title} Task is deleted successfully`,
+        },
+        HttpStatus.ACCEPTED,
+      );
+    }
+  }
 }

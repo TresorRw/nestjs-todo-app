@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -43,5 +44,11 @@ export class TasksController {
     const user = req.user;
     const task_id: string = task.task_id;
     return this.taskService.editTask(task_id, dto, user);
+  }
+
+  @Delete('delete/:task_id')
+  deleteTask(@Param() task: TaskParamDTO, @Request() req) {
+    const user = req.user;
+    return this.taskService.deleteTask(task.task_id, user);
   }
 }
