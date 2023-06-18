@@ -46,7 +46,6 @@ export class TasksService {
       );
     }
     try {
-      //Update the task
       const updateTask = await this.prisma.task.update({
         where: { id: task_id },
         data: {

@@ -13,12 +13,14 @@ import {
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { AuthGuard } from 'src/auth/auth.guard';
-import { ChangeStatusDTO, TaskDTO } from './dto';
+import { TaskDTO } from './dto';
 import { TaskParamDTO } from './dto';
 import {
   ApiAcceptedResponse,
+  ApiBadRequestResponse,
   ApiBearerAuth,
   ApiCreatedResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiParam,
   ApiTags,
@@ -32,20 +34,15 @@ export class TasksController {
   constructor(private taskService: TasksService) {}
 
   @Post('new')
-  @ApiCreatedResponse({
-    type: TaskDTO,
-    description: 'Your task has been created',
-  })
+  @ApiBadRequestResponse({ description: 'Validation error' })
+  @ApiCreatedResponse({ description: 'Your task has been created' })
   newTask(@Request() req, @Body() dto: TaskDTO) {
     return this.taskService.saveTask(dto, req.user);
   }
 
   @HttpCode(HttpStatus.OK)
   @Get('all')
-  @ApiOkResponse({
-    status: 200,
-    description: 'All tasks saved in your account',
-  })
+  @ApiOkResponse({ description: 'All tasks saved in your account' })
   allTasks(@Request() req) {
     return this.taskService.allTasks(req.user);
   }
@@ -57,10 +54,9 @@ export class TasksController {
     type: 'string',
     description: 'id of task to be updated',
   })
-  @ApiAcceptedResponse({
-    status: 202,
-    description: 'Task updated successfully',
-  })
+  @ApiNotFoundResponse({ description: 'Not task found' })
+  @ApiBadRequestResponse({ description: 'Validation error' })
+  @ApiAcceptedResponse({ description: 'Task updated successfully' })
   updateTask(
     @Param() task: TaskParamDTO,
     @Body() dto: TaskDTO,
@@ -68,11 +64,15 @@ export class TasksController {
   ) {
     return this.taskService.editTask(task.task_id, dto, req.user);
   }
+
   @ApiParam({
     name: 'task_id',
     type: 'string',
     description: 'id of task to be deleted',
   })
+  @ApiBadRequestResponse({ description: 'Validation error' })
+  @ApiNotFoundResponse({ description: 'Not task found' })
+  @ApiAcceptedResponse({ description: 'Task deleted successfully' })
   @Delete('delete/:task_id')
   deleteTask(@Param() task: TaskParamDTO, @Request() req) {
     return this.taskService.deleteTask(task.task_id, req.user);
@@ -84,22 +84,20 @@ export class TasksController {
     description: 'id of task to be returned',
   })
   @Get(':task_id')
+  @ApiOkResponse({ description: 'Task returned' })
+  @ApiBadRequestResponse({ description: 'Validation failed' })
   singleTask(@Param() task: TaskParamDTO, @Request() req) {
     return this.taskService.singleTask(task.task_id, req.user);
   }
 
   @Patch('change-status/:task_id')
+  @ApiNotFoundResponse({ description: 'Task not found' })
   @ApiParam({
     name: 'task_id',
     type: 'string',
     description: 'id of task to be updated',
   })
-  changeStatus(
-    @Param('task_id') task_id: string,
-    @Request() req,
-    @Body() dto: ChangeStatusDTO,
-  ) {
-    return { task_id, dto };
-    // return this.taskService.statusChange(task.task_id, req.user);
+  changeStatus(@Param('task_id') task_id: string, @Request() req) {
+    return this.taskService.statusChange(task_id, req.user);
   }
 }
