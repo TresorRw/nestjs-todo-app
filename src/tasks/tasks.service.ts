@@ -95,4 +95,11 @@ export class TasksService {
       );
     }
   }
+
+  async singleTask(task_id: string, user: User) {
+    const response = await this.prisma.task.findFirst({
+      where: { id: task_id, userId: user.id },
+    });
+    return { message: `Task with ${task_id}`, task: response };
+  }
 }

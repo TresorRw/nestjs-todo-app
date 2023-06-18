@@ -23,15 +23,13 @@ export class TasksController {
 
   @Post('new')
   newTask(@Request() req, @Body() dto: TaskDTO) {
-    const user = req.user;
-    return this.taskService.saveTask(dto, user);
+    return this.taskService.saveTask(dto, req.user);
   }
 
   @HttpCode(HttpStatus.OK)
   @Get('all')
   allTasks(@Request() req) {
-    const user = req.user;
-    return this.taskService.allTasks(user);
+    return this.taskService.allTasks(req.user);
   }
 
   @HttpCode(HttpStatus.ACCEPTED)
@@ -41,14 +39,16 @@ export class TasksController {
     @Body() dto: TaskDTO,
     @Request() req,
   ) {
-    const user = req.user;
-    const task_id: string = task.task_id;
-    return this.taskService.editTask(task_id, dto, user);
+    return this.taskService.editTask(task.task_id, dto, req.user);
   }
 
   @Delete('delete/:task_id')
   deleteTask(@Param() task: TaskParamDTO, @Request() req) {
-    const user = req.user;
-    return this.taskService.deleteTask(task.task_id, user);
+    return this.taskService.deleteTask(task.task_id, req.user);
+  }
+
+  @Get(':task_id')
+  singleTask(@Param() task: TaskParamDTO, @Request() req) {
+    return this.taskService.singleTask(task.task_id, req.user);
   }
 }
