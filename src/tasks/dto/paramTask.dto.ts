@@ -1,6 +1,6 @@
 import { IsString, IsUUID } from 'class-validator';
 
-export class UpdateTaskDTO {
+export class TaskParamDTO {
   @IsString()
   @IsUUID()
   task_id: string;

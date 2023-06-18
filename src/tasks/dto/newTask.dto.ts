@@ -19,7 +19,7 @@ export class DateValidator {
   }
 }
 
-export class NewTaskDTO {
+export class TaskDTO {
   @IsString()
   @IsNotEmpty()
   title: string;

@@ -12,8 +12,8 @@ import {
 } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { AuthGuard } from 'src/auth/auth.guard';
-import { NewTaskDTO } from './dto';
-import { UpdateTaskDTO } from './dto';
+import { TaskDTO } from './dto';
+import { TaskParamDTO } from './dto';
 
 @Controller('tasks')
 @UseGuards(AuthGuard)
@@ -21,7 +21,7 @@ export class TasksController {
   constructor(private taskService: TasksService) {}
 
   @Post('new')
-  newTask(@Request() req, @Body() dto: NewTaskDTO) {
+  newTask(@Request() req, @Body() dto: TaskDTO) {
     const user = req.user;
     return this.taskService.saveTask(dto, user);
   }
@@ -36,8 +36,8 @@ export class TasksController {
   @HttpCode(HttpStatus.ACCEPTED)
   @Patch('edit/:task_id')
   updateTask(
-    @Param() task: UpdateTaskDTO,
-    @Body() dto: NewTaskDTO,
+    @Param() task: TaskParamDTO,
+    @Body() dto: TaskDTO,
     @Request() req,
   ) {
     const user = req.user;

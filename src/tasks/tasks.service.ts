@@ -1,12 +1,12 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { NewTaskDTO } from './dto';
+import { TaskDTO } from './dto';
 import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class TasksService {
   constructor(private prisma: PrismaService) {}
-  async saveTask(data: NewTaskDTO, user: User) {
+  async saveTask(data: TaskDTO, user: User) {
     try {
       const save = await this.prisma.task.create({
         data: { ...data, userId: user.id },
@@ -32,7 +32,7 @@ export class TasksService {
     };
   }
 
-  async editTask(task_id: string, taskDetails: NewTaskDTO, user: User) {
+  async editTask(task_id: string, taskDetails: TaskDTO, user: User) {
     const checkTask = await this.prisma.task.findFirst({
       where: { id: task_id, userId: user.id },
     });

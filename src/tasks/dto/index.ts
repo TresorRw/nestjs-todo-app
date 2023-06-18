@@ -1,2 +1,2 @@
 export * from './newTask.dto';
-export * from './updateTask.dto';
+export * from './paramTask.dto';
