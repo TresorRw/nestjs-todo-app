@@ -1,4 +1,9 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { TaskDTO } from './dto';
 import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -33,17 +38,10 @@ export class TasksService {
   }
 
   async editTask(task_id: string, taskDetails: TaskDTO, user: User) {
-    const checkTask = await this.prisma.task.findFirst({
-      where: { id: task_id, userId: user.id },
-    });
-    if (!checkTask) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.NOT_FOUND,
-          message: 'We can not find matching task in your account',
-        },
-        HttpStatus.NOT_FOUND,
-      );
+    try {
+      await this.checkOwnership(task_id, user.id);
+    } catch (error) {
+      return this.errorReturner(error);
     }
     try {
       const updateTask = await this.prisma.task.update({
@@ -71,27 +69,20 @@ export class TasksService {
   }
 
   async deleteTask(task_id: string, user: User) {
-    const checkTask = await this.prisma.task.findFirst({
-      where: { id: task_id, userId: user.id },
-    });
-    if (!checkTask) {
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.NOT_FOUND,
-          message: 'We can not find matching task in your account',
-        },
-        HttpStatus.NOT_FOUND,
-      );
-    }
-    const del = await this.prisma.task.delete({ where: { id: task_id } });
-    if (del) {
-      throw new HttpException(
-        {
-          statuCode: HttpStatus.ACCEPTED,
-          message: `${del.title} Task is deleted successfully`,
-        },
-        HttpStatus.ACCEPTED,
-      );
+    try {
+      const task = await this.checkOwnership(task_id, user.id);
+      const del = await this.prisma.task.delete({ where: { id: task.id } });
+      if (del) {
+        throw new HttpException(
+          {
+            statuCode: HttpStatus.ACCEPTED,
+            message: `${del.title} Task is deleted successfully`,
+          },
+          HttpStatus.ACCEPTED,
+        );
+      }
+    } catch (error) {
+      return this.errorReturner(error);
     }
   }
 
@@ -103,8 +94,26 @@ export class TasksService {
   }
 
   async statusChange(task_id: string, user: User) {
+    try {
+      const checkTask = await this.checkOwnership(task_id, user.id);
+      const update = await this.prisma.task.update({
+        where: { id: task_id },
+        data: { isCompleted: !checkTask.isCompleted },
+      });
+      return {
+        statusCode: HttpStatus.OK,
+        message: `${update.title} is now marked as ${
+          update.isCompleted ? 'completed ✅' : 'not completed ❌'
+        }`,
+      };
+    } catch (error) {
+      return this.errorReturner(error);
+    }
+  }
+
+  private async checkOwnership(task_id: string, user_id: string) {
     const checkTask = await this.prisma.task.findFirst({
-      where: { id: task_id, userId: user.id },
+      where: { id: task_id, userId: user_id },
     });
     if (!checkTask) {
       throw new HttpException(
@@ -115,13 +124,19 @@ export class TasksService {
         HttpStatus.NOT_FOUND,
       );
     }
-    const update = await this.prisma.task.update({
-      where: { id: task_id },
-      data: { isCompleted: !checkTask.isCompleted },
-    });
-    return {
-      message: 'Status update completed',
-      new_records: update,
-    };
+    return checkTask;
+  }
+
+  private errorReturner(error: any) {
+    if (error instanceof HttpException) {
+      throw new HttpException(
+        {
+          statusCode: error.getStatus(),
+          message: error.message,
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    throw new BadRequestException(error.message);
   }
 }

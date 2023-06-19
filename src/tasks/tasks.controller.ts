@@ -95,7 +95,7 @@ export class TasksController {
   @ApiParam({
     name: 'task_id',
     type: 'string',
-    description: 'id of task to be updated',
+    description: 'id of task to be updated with status',
   })
   changeStatus(@Param('task_id') task_id: string, @Request() req) {
     return this.taskService.statusChange(task_id, req.user);
